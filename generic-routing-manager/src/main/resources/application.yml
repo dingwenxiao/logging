@@ -1,0 +1,31 @@
+zuul:
+  ignoredServices: ""
+  routes:
+    sample-all-services:
+    # every requests will be taken into account
+    # no URL nor Eureka service is set because the filter will be in charge of the route
+      path: /**
+  sensitiveHeaders: Cookie,Set-Cookie
+
+server:
+  port: 8080
+
+logging:
+  level:
+    ROOT: INFO
+    org.springframework.web: INFO
+    info.tcb: DEBUG
+
+
+kubernetes:
+  master:
+    url: http://172.28.250.4:8080/
+
+ribbon:
+  eureka:
+    enabled: false
+
+sample-all-services:
+  ribbon:
+    ReadTimeout: 15000
+    
