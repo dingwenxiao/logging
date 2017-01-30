@@ -3,9 +3,9 @@ package com.genband.util.log;
 import org.slf4j.Logger;
 
 /**
- * So far it's useless. The wrap won't work since the code location is not correct.
- * need to find a way to wrap our own log4j.
- * should be removed after Dingwen checked
+ * So far it's useless. The wrap won't work since the code location is not correct. need to find a
+ * way to wrap our own log4j. should be removed after Dingwen checked
+ * 
  * @author hakuang
  *
  */

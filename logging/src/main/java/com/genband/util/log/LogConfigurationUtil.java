@@ -14,33 +14,35 @@ import org.apache.logging.log4j.core.filter.ThresholdFilter;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 
 public class LogConfigurationUtil {
-	private final static String BOOTSTRAP_SERVERS = "bootstrap.servers";
-	
-	public static void addKafkaAppender(String kafkaAddress, String appenderName, String topicName,
-			Level thresholdFilterOneLevel, Level thresholdFilterTwoLevel) {
-		final LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
-		final Configuration configuration = loggerContext.getConfiguration();
+  private final static String BOOTSTRAP_SERVERS = "bootstrap.servers";
 
-		Property[] properties = new Property[] { Property.createProperty(BOOTSTRAP_SERVERS, kafkaAddress) };
+  public static void addKafkaAppender(String kafkaAddress, String appenderName, String topicName,
+      Level thresholdFilterOneLevel, Level thresholdFilterTwoLevel) {
+    final LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
+    final Configuration configuration = loggerContext.getConfiguration();
 
-		Filter[] filter = new ThresholdFilter[] { ThresholdFilter.createFilter(thresholdFilterOneLevel, null, null),
-				ThresholdFilter.createFilter(thresholdFilterTwoLevel, Result.DENY, Result.NEUTRAL) };
+    Property[] properties =
+        new Property[] {Property.createProperty(BOOTSTRAP_SERVERS, kafkaAddress)};
 
-		CompositeFilter compositeFilter = CompositeFilter.createFilters(filter);
+    Filter[] filter =
+        new ThresholdFilter[] {ThresholdFilter.createFilter(thresholdFilterOneLevel, null, null),
+            ThresholdFilter.createFilter(thresholdFilterTwoLevel, Result.DENY, Result.NEUTRAL)};
 
-		PatternLayout patternLayout = PatternLayout.createLayout(
-				"%d{ISO8601}{UTC} ${sys:microserver.name.id} ${sys:hostname} %p %F %M %t %L %m", null, configuration,
-				null, null, false, false, null, null);
+    CompositeFilter compositeFilter = CompositeFilter.createFilters(filter);
 
-		KafkaAppender kafkaAppender = KafkaAppender.createAppender(patternLayout, compositeFilter, appenderName, true,
-				topicName, properties);
-		kafkaAppender.start();
+    PatternLayout patternLayout = PatternLayout.createLayout(
+        "%d{ISO8601}{UTC} ${sys:microserver.name.id} ${sys:hostname} %p %F %M %t %L %m", null,
+        configuration, null, null, false, false, null, null);
 
-		configuration.addAppender(kafkaAppender);
+    KafkaAppender kafkaAppender = KafkaAppender.createAppender(patternLayout, compositeFilter,
+        appenderName, true, topicName, properties);
+    kafkaAppender.start();
 
-		LoggerConfig loggerConfig = configuration.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
-		loggerConfig.addAppender(kafkaAppender, Level.ALL, null);
-		loggerContext.updateLoggers(configuration);
-	}
+    configuration.addAppender(kafkaAppender);
+
+    LoggerConfig loggerConfig = configuration.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);
+    loggerConfig.addAppender(kafkaAppender, Level.ALL, null);
+    loggerContext.updateLoggers(configuration);
+  }
 
 }

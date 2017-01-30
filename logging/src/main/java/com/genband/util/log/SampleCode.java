@@ -44,8 +44,9 @@ public class SampleCode {
   }
 
   private static String getKakfaAddress() {
-	  
-	new KubernetesNetworkService.SingletonBuilder(new KafkaConfigManager("config.properties")).build();
+
+    new KubernetesNetworkService.SingletonBuilder(new KafkaConfigManager("config.properties"))
+        .build();
     KubernetesNetworkService kubernetesNetworkService =
         KubernetesNetworkService.getInstance(new EndPointsWatcherCallback() {
           @Override
