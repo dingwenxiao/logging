@@ -14,12 +14,14 @@ import org.apache.logging.log4j.core.filter.ThresholdFilter;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 
 public class LogConfigurationUtil {
+	private final static String BOOTSTRAP_SERVERS = "bootstrap.servers";
+	
 	public static void addKafkaAppender(String kafkaAddress, String appenderName, String topicName,
 			Level thresholdFilterOneLevel, Level thresholdFilterTwoLevel) {
 		final LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
 		final Configuration configuration = loggerContext.getConfiguration();
 
-		Property[] properties = new Property[] { Property.createProperty("bootstrap.servers", kafkaAddress) };
+		Property[] properties = new Property[] { Property.createProperty(BOOTSTRAP_SERVERS, kafkaAddress) };
 
 		Filter[] filter = new ThresholdFilter[] { ThresholdFilter.createFilter(thresholdFilterOneLevel, null, null),
 				ThresholdFilter.createFilter(thresholdFilterTwoLevel, Result.DENY, Result.NEUTRAL) };

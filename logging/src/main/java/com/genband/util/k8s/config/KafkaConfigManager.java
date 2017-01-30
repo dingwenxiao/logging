@@ -7,24 +7,9 @@ public class KafkaConfigManager extends ConfigManager{
 
 	private HashMap<String, String> kafkaLabelsMap = new HashMap<>();
 
-	public KafkaConfigManager() {
+	public KafkaConfigManager(String configPath) {
+		super(configPath);
 		loadKafakLabelMap();
-	}
-
-	public HashMap<String, String> getKafakLabels() {
-		if (kafkaLabelsMap.isEmpty()) {
-			loadKafakLabelMap();
-		}
-		return kafkaLabelsMap;
-	}
-
-	private void loadKafakLabelMap() {
-		for (String key : prop.stringPropertyNames()) {
-			if (key.startsWith("label")) {
-				String value = prop.getProperty(key);
-				kafkaLabelsMap.put(key, value);
-			}
-		}
 	}
 
 	public Properties getProp() {
@@ -38,5 +23,19 @@ public class KafkaConfigManager extends ConfigManager{
 	public void resetKafakLabelMap() {
 		kafkaLabelsMap = new HashMap<>();
 		loadKafakLabelMap();
+	}
+
+	@Override
+	public HashMap<String, String> getLabelMap() {
+		return kafkaLabelsMap;
+	}
+	
+	private void loadKafakLabelMap() {
+		for (String key : prop.stringPropertyNames()) {
+			if (key.startsWith("kafka.label")) {
+				String value = prop.getProperty(key);
+				kafkaLabelsMap.put(key, value);
+			}
+		}
 	}
 }

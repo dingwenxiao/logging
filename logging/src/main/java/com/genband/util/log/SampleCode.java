@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import com.genband.util.k8s.EndPointsWatcherCallback;
 import com.genband.util.k8s.KubernetesNetworkService;
+import com.genband.util.k8s.config.KafkaConfigManager;
 
 /**
  * This file should be removed after Dingwen checked.
@@ -43,6 +44,8 @@ public class SampleCode {
   }
 
   private static String getKakfaAddress() {
+	  
+	new KubernetesNetworkService.SingletonBuilder(new KafkaConfigManager("config.properties")).build();
     KubernetesNetworkService kubernetesNetworkService =
         KubernetesNetworkService.getInstance(new EndPointsWatcherCallback() {
           @Override
@@ -51,7 +54,7 @@ public class SampleCode {
           }
         });
 
-    List<String> fetchKafkaAddress = kubernetesNetworkService.fetchKafkaAddress();
+    List<String> fetchKafkaAddress = kubernetesNetworkService.getEndPointsAddressFromConfigMap();
     if (fetchKafkaAddress != null) {
       logger.info(fetchKafkaAddress.toString());
     } else {
