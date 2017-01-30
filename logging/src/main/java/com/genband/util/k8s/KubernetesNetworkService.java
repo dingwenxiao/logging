@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.genband.util.k8s.config.ConfigManager;
 import com.genband.util.k8s.config.KafkaConfigManager;
+import com.genband.util.k8s.connection.KubernetesConnectionUtils;
 
 import io.fabric8.kubernetes.api.model.EndpointAddress;
 import io.fabric8.kubernetes.api.model.EndpointPort;
@@ -28,6 +29,7 @@ public enum KubernetesNetworkService {
   SERVICE_INSTANCE;
   private static String KUBERNETES_MASTER_URL_KEY = "kubernetesMasterUrl";
   private final static String kubernetesMasterTestUrl = "http://172.28.250.4:8080/";
+  private final static int CONNECTION_RETRY_NUM = 3;
 
   private Logger logger = LoggerFactory.getLogger(KubernetesNetworkService.class);
 
@@ -112,9 +114,13 @@ public enum KubernetesNetworkService {
    */
   public List<String> getEndpointsAddressByLabel(HashMap<String, String> labelsMap) {
     List<String> resAddressList = new ArrayList<>();
-    EndpointsList endpointsList = client.endpoints().withLabels(labelsMap).list();
-    for (Endpoints endPoints : endpointsList.getItems()) {
-      resAddressList.addAll(getEndPointsAddressList(endPoints));
+    EndpointsList endpointsList =
+        KubernetesConnectionUtils.getEndPointsListBylabels(client, labelsMap, CONNECTION_RETRY_NUM);
+
+    if (endpointsList != null) {
+      for (Endpoints endPoints : endpointsList.getItems()) {
+        resAddressList.addAll(getEndPointsAddressList(endPoints));
+      }
     }
     return resAddressList;
   }
@@ -163,7 +169,7 @@ public enum KubernetesNetworkService {
 
     @Override
     public void onClose(KubernetesClientException cause) {
-      logger.debug("kafka watch closed");
+      logger.info("Watch closed");
     }
   }
 
