@@ -2,15 +2,20 @@ package com.genband.util.k8s.connection;
 
 import java.util.HashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 
 import io.fabric8.kubernetes.api.model.EndpointsList;
 import io.fabric8.kubernetes.client.KubernetesClient;
 
+/**
+ * Manage k8s connection. This class wrap all the methods 
+ * that try to connect k8s, and once the microservice failed to connect the k8s, it will retry connecting n times.
+ * @author dixiao
+ *
+ */
 public class KubernetesConnectionUtils {
 
-  private final static Logger logger = LoggerFactory.getLogger(KubernetesConnectionUtils.class);
+  private final static Logger logger = Logger.getLogger(KubernetesConnectionUtils.class);
   
   /**
    * 

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 
 import com.genband.util.k8s.config.ConfigManager;
 import com.genband.util.k8s.connection.KubernetesConnectionUtils;
@@ -19,19 +20,19 @@ import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watcher;
-import org.apache.log4j.Logger;
 
-public enum KubernetesNetworkService {
+public class KubernetesNetworkServiceClass {
 
-  SERVICE_INSTANCE;
+  //private static KubernetesNetworkServiceClass INSTANCE;
+
   private static String KUBERNETES_MASTER_URL_KEY = "kubernetesMasterUrl";
   private final static String kubernetesMasterTestUrl = "http://172.28.250.4:8080/";
   private final static int CONNECTION_RETRY_NUM = 3;// the maximum times of retry connection
 
-  private Logger logger = Logger.getLogger(KubernetesNetworkService.class);
+  private static Logger logger = Logger.getLogger(KubernetesNetworkServiceClass.class);
 
   private String kubernetesMasterUrl;
-  private Config config;
+  private static Config config;
   private KubernetesClient client;
   private List<String> addressList;// pods address list
   private EndPointsWatcherCallback endPointsWatcherCallback;
@@ -39,32 +40,30 @@ public enum KubernetesNetworkService {
 
   /**
    * Get instance of KubernetesNetworkService
+   * 
    * @return
    */
-  public static KubernetesNetworkService getInstance() {
-    for (String address : SERVICE_INSTANCE.addressList) {
-      SERVICE_INSTANCE.logger.info(address);
-    }
-    return SERVICE_INSTANCE;
-  }
-
-  /**
-   * Get values from builder and assign those values to all the fields   
-   * @param builder singleton builder
-   */
-  private void build(SingletonBuilder builder) {
-    this.kubernetesMasterUrl =
-        (builder.kubernetesMasterUrl == null || builder.kubernetesMasterUrl.isEmpty())
-            ? getMasterUrlFromSystemVariable() : builder.kubernetesMasterUrl;
-    this.endPointsWatcherCallback = builder.endPointsWatcherCallback;
-    this.configManager = builder.configManager;
+  public KubernetesNetworkServiceClass(ConfigManager configManager) {
+    this.configManager = configManager;
+    this.kubernetesMasterUrl = (configManager.getKubernetesMasterUrl() == null
+        || configManager.getKubernetesMasterUrl().isEmpty()) ? getMasterUrlFromSystemVariable()
+            : configManager.getKubernetesMasterUrl();
 
     if (kubernetesMasterUrl != null) {
       config = new ConfigBuilder().withMasterUrl(kubernetesMasterUrl).build();
-      client = new DefaultKubernetesClient(this.config);
+   //   client = new DefaultKubernetesClient(this.config);
       addressList = new ArrayList<>();
     }
   }
+
+//  public static synchronized KubernetesNetworkServiceClass getInstance(
+//      ConfigManager configManager) {
+//    if (INSTANCE == null) {
+//      INSTANCE = new KubernetesNetworkServiceClass(configManager);
+//    }
+//    return INSTANCE;
+//
+//  }
 
   /**
    * Get all address of endpoints with same label in config map
@@ -177,12 +176,12 @@ public enum KubernetesNetworkService {
 
     private void processAddedAction(Endpoints endpoints) {
       addressList = getEndPointsAddressList(endpoints);
-      logger.info("Adding event on endpoints: " + addressList);
+      logger.info("Adding event on endpoints :" + addressList);
     }
 
     private void processModifiedAction(Endpoints endpoints) {
       addressList = getEndPointsAddressList(endpoints);
-      logger.info("Modifying event on endpoints: " + addressList);
+      logger.info("Modifying event on endpoints :" + addressList);
     }
 
     @Override
@@ -191,38 +190,4 @@ public enum KubernetesNetworkService {
     }
   }
 
-  /**
-   * Set initial KubernetesNetworkService parameters with the singleton builder class
-   * 
-   * @author dixiao
-   *
-   */
-  public static class SingletonBuilder {
-
-    private String kubernetesMasterUrl; // Mandatory
-    private ConfigManager configManager = null; // Mandatory
-    private EndPointsWatcherCallback endPointsWatcherCallback = null;
-
-    /**
-     * Get configs from configManager, and assign them to builder
-     * @param configManager
-     */
-    public SingletonBuilder(ConfigManager configManager) {
-      this.kubernetesMasterUrl = configManager.getKubernetesMasterUrl();
-      this.configManager = configManager;
-    }
-
-    public SingletonBuilder endPointsWatcherCallback(
-        EndPointsWatcherCallback endPointsWatcherCallback) {
-      this.endPointsWatcherCallback = endPointsWatcherCallback;
-      return this;
-    }
-
-    /**
-     * Assgin values from builder to fields of KubernetesNetworkService
-     */
-    public void build() {
-      KubernetesNetworkService.SERVICE_INSTANCE.build(this);
-    }
-  }
 }

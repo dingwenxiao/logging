@@ -9,15 +9,25 @@ import java.util.Properties;
 
 import org.springframework.util.ResourceUtils;
 
-
+/**
+ * this class is configuration for kubernetes connection. Any other configuration of services on k8s
+ *  like kafka, you can extend the abstract class.  
+ * @author dixiao
+ *
+ */
 public abstract class ConfigManager {
 
-  Properties prop = null;
+  Properties properties = null;
   private String configFilePath;
   private static final String DEFAULT_CONFIG_PATH = "config.properties";
   private String kubernetesMasterUrl;
 
   abstract public HashMap<String, String> getLabelMap();
+
+  abstract public Properties getProperties();
+
+  abstract public void setProperties(Properties properties);
+
 
   public ConfigManager() {
     loadProperties();
@@ -35,9 +45,12 @@ public abstract class ConfigManager {
   public String getKubernetesMasterUrl() {
     return kubernetesMasterUrl;
   }
-
+  
+/**load all properties from the config file 
+ * 
+ */
   private void loadProperties() {
-    prop = new Properties();
+    properties = new Properties();
     InputStream input = null;
     try {
       if (configFilePath == null || "".equals(configFilePath)) {
@@ -45,8 +58,8 @@ public abstract class ConfigManager {
       }
       input = new FileInputStream(configFilePath);
       // load a properties file
-      prop.load(input);
-      kubernetesMasterUrl = prop.getProperty("kubernetes.master.url");
+      properties.load(input);
+      kubernetesMasterUrl = properties.getProperty("kubernetes.master.url");
     } catch (IOException ex) {
       ex.printStackTrace();
     } finally {

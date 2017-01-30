@@ -3,39 +3,51 @@ package com.genband.util.k8s.config;
 import java.util.HashMap;
 import java.util.Properties;
 
+/**
+ * This class is for loading kafka service configuration such kafka service label.
+ * @author dixiao
+ *
+ */
 public class KafkaConfigManager extends ConfigManager {
 
   private HashMap<String, String> kafkaLabelsMap = new HashMap<>();
 
+  /**
+   *  Constructor for kafka configuration class
+   * @param configPath
+   */
   public KafkaConfigManager(String configPath) {
     super(configPath);
     loadKafakLabelMap();
   }
 
-  public Properties getProp() {
-    return prop;
-  }
-
-  public void setProp(Properties prop) {
-    this.prop = prop;
-  }
-
-  public void resetKafakLabelMap() {
-    kafkaLabelsMap = new HashMap<>();
-    loadKafakLabelMap();
-  }
-
+  /**
+   * Get label map from configuration
+   */
   @Override
   public HashMap<String, String> getLabelMap() {
     return kafkaLabelsMap;
   }
 
+  /**
+   * Assign values to label map
+   */
   private void loadKafakLabelMap() {
-    for (String key : prop.stringPropertyNames()) {
+    for (String key : properties.stringPropertyNames()) {
       if (key.startsWith("kafka.label")) {
-        String value = prop.getProperty(key);
+        String value = properties.getProperty(key);
         kafkaLabelsMap.put(key, value);
       }
     }
+  }
+
+  @Override
+  public Properties getProperties() {
+    return properties;
+  }
+
+  @Override
+  public void setProperties(Properties properties) {
+    this.properties = properties;
   }
 }

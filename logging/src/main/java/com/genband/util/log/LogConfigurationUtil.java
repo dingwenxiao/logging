@@ -13,11 +13,21 @@ import org.apache.logging.log4j.core.filter.CompositeFilter;
 import org.apache.logging.log4j.core.filter.ThresholdFilter;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 
-public class LogConfigurationUtil {
-  private final static String BOOTSTRAP_SERVERS = "bootstrap.servers";
+import com.genband.util.k8s.config.ConfigManager;
 
-  public static void addKafkaAppender(String kafkaAddress, String appenderName, String topicName,
-      Level thresholdFilterOneLevel, Level thresholdFilterTwoLevel) {
+/**
+ * Dynamically add kafka log4j appender
+ * 
+ * @author dixiao
+ *
+ */
+public class LogConfigurationUtil {
+  private final static String BOOTSTRAP_SERVERS = "bootstrap.servers";// bootstrap.servers address
+  private final static String PATTERN_LAYOUT = "log.pattern.layout";// log pattern layout
+
+  public static void addKafkaAppender(ConfigManager configManager, String kafkaAddress,
+      String appenderName, String topicName, Level thresholdFilterOneLevel,
+      Level thresholdFilterTwoLevel) {
     final LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
     final Configuration configuration = loggerContext.getConfiguration();
 
@@ -30,9 +40,9 @@ public class LogConfigurationUtil {
 
     CompositeFilter compositeFilter = CompositeFilter.createFilters(filter);
 
-    PatternLayout patternLayout = PatternLayout.createLayout(
-        "%d{ISO8601}{UTC} ${sys:microserver.name.id} ${sys:hostname} %p %F %M %t %L %m", null,
-        configuration, null, null, false, false, null, null);
+    PatternLayout patternLayout =
+        PatternLayout.createLayout(configManager.getProperties().getProperty(PATTERN_LAYOUT), null,
+            configuration, null, null, false, false, null, null);
 
     KafkaAppender kafkaAppender = KafkaAppender.createAppender(patternLayout, compositeFilter,
         appenderName, true, topicName, properties);
