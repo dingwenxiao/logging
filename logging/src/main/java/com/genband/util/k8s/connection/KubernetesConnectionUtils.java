@@ -21,7 +21,7 @@ public class KubernetesConnectionUtils {
    * 
    * @param client kubernetes client
    * @param labelsMap labels
-   * @param retryNum number of retry connecting
+   * @param retryNum number of retries
    * @return  EndpointsList
    */
   public static EndpointsList getEndPointsListBylabels(KubernetesClient client,

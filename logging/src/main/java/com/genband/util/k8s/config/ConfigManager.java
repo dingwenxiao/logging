@@ -10,8 +10,8 @@ import java.util.Properties;
 import org.springframework.util.ResourceUtils;
 
 /**
- * this class is configuration for kubernetes connection. Any other configuration of services on k8s
- *  like kafka, you can extend the abstract class.  
+ * this class is configuration for kubernetes connection. Any configuration of services on k8s
+ *  such as kafka, you can extend the abstract class.  
  * @author dixiao
  *
  */

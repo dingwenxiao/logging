@@ -20,7 +20,7 @@ public class KubernetesNetworkServiceTest {
 		ConfigManager configManager = new KafkaConfigManager("config.properties");
 		new KubernetesNetworkService.SingletonBuilder( configManager).build();
 		kubernetesNetworkService = KubernetesNetworkService.SERVICE_INSTANCE;
-		kubernetesNetworkService.startEndPointsWatcher();
+		//kubernetesNetworkService.startEndPointsWatcher();
 	}
 	
 	

@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.genband.util.k8s.config.ConfigManager;
 import com.genband.util.k8s.connection.KubernetesConnectionUtils;
+import com.genband.util.k8s.connection.LoggerOperation;
 
 import io.fabric8.kubernetes.api.model.EndpointAddress;
 import io.fabric8.kubernetes.api.model.EndpointPort;
@@ -18,6 +19,7 @@ import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
+import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 import org.apache.log4j.Logger;
 
@@ -107,10 +109,12 @@ public enum KubernetesNetworkService {
    * start to watch those endpoints with same specified label (in a same service)
    * 
    */
-  public void startEndPointsWatcher() {
+  public Watch getEndPointsWatcher() {
+    Watch watcher = null;
     if (client != null && !configManager.getLabelMap().isEmpty()) {
-      client.endpoints().withLabels(configManager.getLabelMap()).watch(new EndpointWatcher());
+      watcher = client.endpoints().withLabels(configManager.getLabelMap()).watch(new EndpointWatcher());
     }
+    return watcher;
   }
 
   public void setEndPointsWatcherCallback(EndPointsWatcherCallback endPointsWatcherCallback) {
@@ -132,11 +136,10 @@ public enum KubernetesNetworkService {
    */
   public List<String> getEndpointsAddressByLabel(HashMap<String, String> labelsMap) {
     List<String> resAddressList = new ArrayList<>();
-    EndpointsList endpointsList =
-        KubernetesConnectionUtils.getEndPointsListBylabels(client, labelsMap, CONNECTION_RETRY_NUM);
-
-    if (endpointsList != null) {
-      for (Endpoints endPoints : endpointsList.getItems()) {
+    EndpointsList endPointsList = KubernetesConnectionUtils.getEndPointsListBylabels(client, labelsMap, CONNECTION_RETRY_NUM);
+   // EndpointsList endPointsList = client.endpoints().withLabels(labelsMap).list();
+    if (endPointsList != null) {
+      for (Endpoints endPoints : endPointsList.getItems()) {
         resAddressList.addAll(getEndPointsAddressList(endPoints));
       }
     }
@@ -172,17 +175,20 @@ public enum KubernetesNetworkService {
 
     private void processDeletedFunction(Endpoints endpoints) {
       logger.debug("Deleting event on endpoints");
-      addressList = getEndPointsAddressList(endpoints);;
+      addressList = getEndPointsAddressList(endpoints);
+      LoggerOperation.LoggerAppenderUpdate();
     }
 
     private void processAddedAction(Endpoints endpoints) {
       addressList = getEndPointsAddressList(endpoints);
       logger.info("Adding event on endpoints: " + addressList);
+      LoggerOperation.LoggerAppenderUpdate();
     }
 
     private void processModifiedAction(Endpoints endpoints) {
       addressList = getEndPointsAddressList(endpoints);
       logger.info("Modifying event on endpoints: " + addressList);
+      LoggerOperation.LoggerAppenderUpdate();
     }
 
     @Override

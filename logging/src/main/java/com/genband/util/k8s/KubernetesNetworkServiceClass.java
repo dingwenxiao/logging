@@ -152,7 +152,7 @@ public class KubernetesNetworkServiceClass {
     return kubernetesMasterUrl = System.getenv().get(KUBERNETES_MASTER_URL_KEY);
   }
 
-  private class EndpointWatcher implements Watcher<Endpoints> {
+   class EndpointWatcher implements Watcher<Endpoints> {
 
     @Override
     public void eventReceived(io.fabric8.kubernetes.client.Watcher.Action action,
