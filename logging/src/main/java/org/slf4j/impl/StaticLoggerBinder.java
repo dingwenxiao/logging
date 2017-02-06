@@ -4,6 +4,8 @@ import org.slf4j.ILoggerFactory;
 //import org.slf4j.impl.StaticLoggerBinder;
 import org.slf4j.spi.LoggerFactoryBinder;
 
+import com.genband.util.log.GbLoggerFactory;
+
 public class StaticLoggerBinder implements LoggerFactoryBinder {
 
 	private static final StaticLoggerBinder SINGLETON

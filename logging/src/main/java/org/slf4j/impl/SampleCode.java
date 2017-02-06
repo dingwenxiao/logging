@@ -1,4 +1,4 @@
-package com.genband.util.log;
+package org.slf4j.impl;
 
 import java.util.List;
 import java.util.Locale;
@@ -18,10 +18,13 @@ import com.genband.util.k8s.config.KafkaConfigManager;
  *
  */
 public class SampleCode {
-  private static Logger logger = LoggerFactory.getLogger(SampleCode.class);
+  private static Logger logger = LoggerFactory.getLogger(SampleCode.class.toString());
 
   public static void main(String[] args) {
     logger.info("sdf");
+    
+    org.apache.logging.log4j.LogManager.getLogger("sdfd").info("test");
+    
 //    logger.info(new I18nResource() {
 //      @Override
 //      public String text(Object... arguments) {

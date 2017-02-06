@@ -1,19 +1,29 @@
-package org.slf4j.impl;
+package com.genband.util.log;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.message.Message;
+import org.apache.logging.log4j.message.ParameterizedMessage;
+import org.apache.logging.log4j.message.SimpleMessage;
+import org.apache.logging.log4j.spi.ExtendedLogger;
+import org.apache.logging.slf4j.EventDataConverter;
+import org.apache.logging.slf4j.Log4jLogger;
 import org.apache.logging.slf4j.Log4jMarker;
+import org.apache.logging.slf4j.Log4jMarkerFactory;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
+import org.slf4j.helpers.MarkerIgnoringBase;
+import org.slf4j.impl.StaticMarkerBinder;
+import org.slf4j.spi.LocationAwareLogger;
 
 import com.genband.util.k8s.KubernetesNetworkService;
 import com.genband.util.k8s.KubernetesNetworkServiceClass;
 import com.genband.util.k8s.config.ConfigManager;
 import com.genband.util.k8s.config.KafkaConfigManager;
-import com.genband.util.log.CONSTANT;
-import com.genband.util.log.LogConfigurationUtil;
 
 /**
  * Users can customize their logger by implementing following functions
@@ -21,16 +31,26 @@ import com.genband.util.log.LogConfigurationUtil;
  * @author dixiao
  *
  */
-public class GbLoggerAdapter implements Logger {
+public class GbLoggerAdapter implements LocationAwareLogger, Serializable {
 
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 1L;
   org.apache.logging.log4j.Logger logger4j;
+  org.apache.log4j.Logger root = org.apache.log4j.LogManager.getLogger("sss");
+  public static final String FQCN = Log4jLogger.class.getName();
 
-  String name;
-
-  public GbLoggerAdapter(String name) {
-    System.out.println("Adapter");
-    logger4j = LogManager.getLogger(name);
-    this.name = name;
+  private static final Marker EVENT_MARKER = MarkerFactory.getMarker("EVENT");
+  //private final boolean eventLogger;
+  private transient ExtendedLogger logger;
+  private final String name;
+  private transient EventDataConverter converter;
+  
+  public GbLoggerAdapter(org.apache.logging.log4j.Logger logger4j) {
+    // System.out.println("Adapter");
+    this.logger4j = logger4j;
+    this.name = logger4j.getName();
   }
 
   public void debug(String arg0) {
@@ -87,7 +107,7 @@ public class GbLoggerAdapter implements Logger {
   }
 
   public void error(String arg0, Object... arg1) {
-    logger4j.error(arg0,arg1);
+    logger4j.error(arg0, arg1);
   }
 
   public void error(String arg0, Throwable arg1) {
@@ -120,12 +140,14 @@ public class GbLoggerAdapter implements Logger {
     logger4j.error(arg1, arg2, arg3);
   }
 
+  @Override
   public String getName() {
     return this.name;
   }
 
   public void info(String arg0) {
-    logger4j.info("This is customzed log " + arg0);
+    // logger4j.info("This is customzed log " + arg0);
+    root.info("asdfsd");
   }
 
   public void info(String arg0, Object arg1) {
@@ -310,4 +332,55 @@ public class GbLoggerAdapter implements Logger {
     logger4j.warn(arg2);
     logger4j.warn(arg3);
   }
+
+  @Override
+  public void log(Marker marker, String fqcn, int level, String message, Object[] params,
+      Throwable throwable) {
+    final Level log4jLevel = getLevel(level);
+    final org.apache.logging.log4j.Marker log4jMarker = getMarker(marker);
+
+    if (!logger.isEnabled(log4jLevel, log4jMarker, message, params)) {
+        return;
+    }
+    final Message msg;
+    if (marker != null && marker.contains(EVENT_MARKER) && converter != null) {
+        msg = converter.convertEvent(message, params, throwable);
+    } else if (params == null) {
+        msg = new SimpleMessage(message);
+    } else {
+        msg = new ParameterizedMessage(message, params, throwable);
+        if (throwable != null) {
+            throwable = msg.getThrowable();
+        }
+    }
+    //logger4j.logMessage(fqcn, log4jLevel, log4jMarker, msg, throwable);
+    logger4j.log(log4jLevel, message, params[0]);
+  }
+  
+  private static org.apache.logging.log4j.Marker getMarker(final Marker marker) {
+    if (marker == null) {
+        return null;
+    } else if (marker instanceof Log4jMarker) {
+        return ((Log4jMarker) marker).getLog4jMarker();
+    } else {
+        final Log4jMarkerFactory factory = (Log4jMarkerFactory) StaticMarkerBinder.SINGLETON.getMarkerFactory();
+        return ((Log4jMarker) factory.getMarker(marker)).getLog4jMarker();
+    }
+}
+  
+  private static Level getLevel(final int i) {
+    switch (i) {
+    case TRACE_INT:
+        return Level.TRACE;
+    case DEBUG_INT:
+        return Level.DEBUG;
+    case INFO_INT:
+        return Level.INFO;
+    case WARN_INT:
+        return Level.WARN;
+    case ERROR_INT:
+        return Level.ERROR;
+    }
+    return Level.ERROR;
+}
 }
